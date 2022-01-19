@@ -54,6 +54,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
         return "Customer has been deleted";
     }
+
     private Customer findByIdOrThrowNotFound(String id) {
         Optional<Customer> customer = customerRepository.findById(id);
         if (customer.isPresent()) {

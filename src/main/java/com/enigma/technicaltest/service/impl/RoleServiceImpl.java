@@ -31,6 +31,15 @@ public class RoleServiceImpl implements RoleService {
                 }
                 return repository.findByRole(CUSTOMER_ROLE).orElseThrow(()-> new NotFoundException("Error: Role Not Found"));
             }
+
+            if (strRole.equalsIgnoreCase("merchant")){
+                if (!repository.existsByRole(MERCHANT_ROLE)){
+
+                    Role adminRole = new Role(MERCHANT_ROLE);
+                    return repository.save(adminRole);
+                }
+                return repository.findByRole(MERCHANT_ROLE).orElseThrow(()-> new NotFoundException("Error: Role Not Found"));
+            }
         }
 
         return repository.findByRole(CUSTOMER_ROLE).orElseThrow(() -> new NotFoundException("Error: Role Not Found"));

@@ -1,21 +1,20 @@
 package com.enigma.technicaltest.controller;
 
 import com.enigma.technicaltest.entity.*;
-import com.enigma.technicaltest.exception.NotFoundException;
 import com.enigma.technicaltest.request.LoginRequest;
-import com.enigma.technicaltest.request.RegisterRequest;
+import com.enigma.technicaltest.request.RegisterCustomerRequest;
+import com.enigma.technicaltest.request.RegisterMerchantRequest;
 import com.enigma.technicaltest.response.LoginResponse;
-import com.enigma.technicaltest.response.RegisterResponse;
+import com.enigma.technicaltest.response.RegisterCustomerResponse;
+import com.enigma.technicaltest.response.RegisterMerchantResponse;
 import com.enigma.technicaltest.response.WebResponse;
 import com.enigma.technicaltest.security.jwt.JwtUtils;
 import com.enigma.technicaltest.service.CustomerService;
 import com.enigma.technicaltest.service.RoleService;
 import com.enigma.technicaltest.service.UserService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -45,8 +44,8 @@ public class AuthController {
     @Autowired
     private JwtUtils jwtUtils;
 
-    @PostMapping("/register")
-    public ResponseEntity<WebResponse<?>> registerCustomer (@Valid @RequestBody RegisterRequest request){
+    @PostMapping("/register/customer")
+    public ResponseEntity<WebResponse<?>> registerCustomer (@Valid @RequestBody RegisterCustomerRequest request){
 
             User user = new User();
             user.setUsername(request.getUsername());
@@ -64,12 +63,38 @@ public class AuthController {
                 roleSet.add(role1);
             }
 
-            RegisterResponse customerCreate = userService.createCustomer(user,customer,roleSet);
+            RegisterCustomerResponse customerCreate = userService.createCustomer(user,customer,roleSet);
             WebResponse<?> response = new WebResponse<>("Successfully Create New Customer",customerCreate);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(response);
     }
+
+  @PostMapping("/register/merchant")
+  public ResponseEntity<WebResponse<?>> registerMerchant(@Valid @RequestBody RegisterMerchantRequest request){
+
+    User user = new User();
+    user.setUsername(request.getUsername());
+    user.setEmail(request.getEmail());
+    user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+    Merchant merchant = new Merchant();
+    merchant.setName(request.getName());
+
+    Set<String> roles = new HashSet<>();
+    roles.add("merchant");
+    Set<Role> roleSet = new HashSet<>();
+    for (String role: roles) {
+      Role role1 = roleService.create(role);
+      roleSet.add(role1);
+    }
+
+    RegisterMerchantResponse merchantCreate = userService.createMerchant(user,merchant,roleSet);
+    WebResponse<?> response = new WebResponse<>("Successfully Create New Merchant",merchantCreate);
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .body(response);
+  }
 
     @PostMapping("/login")
     public ResponseEntity<WebResponse<?>> login (@Valid @RequestBody LoginRequest request) {

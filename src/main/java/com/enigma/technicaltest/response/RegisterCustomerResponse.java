@@ -12,7 +12,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-public class RegisterResponse {
+public class RegisterCustomerResponse {
 
   private String userId;
 

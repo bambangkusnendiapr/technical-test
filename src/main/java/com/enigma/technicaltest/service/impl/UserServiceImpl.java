@@ -1,10 +1,11 @@
 package com.enigma.technicaltest.service.impl;
 
 import com.enigma.technicaltest.entity.*;
-import com.enigma.technicaltest.exception.NotFoundException;
 import com.enigma.technicaltest.repository.CustomerRepository;
+import com.enigma.technicaltest.repository.MerchantRepository;
 import com.enigma.technicaltest.repository.UserRepository;
-import com.enigma.technicaltest.response.RegisterResponse;
+import com.enigma.technicaltest.response.RegisterCustomerResponse;
+import com.enigma.technicaltest.response.RegisterMerchantResponse;
 import com.enigma.technicaltest.service.RoleService;
 import com.enigma.technicaltest.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,14 +24,19 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private CustomerRepository customerRepository;
+
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private RoleService roleService;
 
+    @Autowired
+    private MerchantRepository merchantRepository;
+
 
     @Override
-    public RegisterResponse createCustomer (User user, Customer customer, Set<Role> roles) {
+    public RegisterCustomerResponse createCustomer (User user, Customer customer, Set<Role> roles) {
 
         user.setRoles(roles);
         User saveUser = userRepository.save(user);
@@ -46,13 +52,37 @@ public class UserServiceImpl implements UserService {
         for (Role role:saveUser.getRoles()) {
             strRoles.add(role.getRole().name());
         }
-        return new RegisterResponse(
+        return new RegisterCustomerResponse(
                 saveUser.getId(),
                 saveUser.getUsername(),
                 saveUser.getEmail(),
                 saveCustomer.getId(),
                 saveCustomer.getName(),
                 saveCustomer.getAccountNumber(),
+                saveUser.getCreatedAt(),
+                saveUser.getUpdatedAt(),
+                strRoles
+        );
+    }
+
+    @Override
+    public RegisterMerchantResponse createMerchant(User user, Merchant merchant, Set<Role> roles) {
+        user.setRoles(roles);
+        User saveUser = userRepository.save(user);
+
+        merchant.setUserId(saveUser);
+        Merchant saveMerchant = merchantRepository.save(merchant);
+
+        Set<String> strRoles = new HashSet<>();
+        for (Role role:saveUser.getRoles()) {
+            strRoles.add(role.getRole().name());
+        }
+        return new RegisterMerchantResponse(
+                saveUser.getId(),
+                saveUser.getUsername(),
+                saveUser.getEmail(),
+                saveMerchant.getId(),
+                saveMerchant.getName(),
                 saveUser.getCreatedAt(),
                 saveUser.getUpdatedAt(),
                 strRoles
