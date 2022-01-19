@@ -24,6 +24,8 @@ public class RegisterCustomerResponse {
 
   private String customerName;
 
+  private String merchant;
+
   private String accountNumber;
 
   private Date createdAt;

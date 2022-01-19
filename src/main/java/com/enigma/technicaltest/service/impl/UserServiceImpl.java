@@ -1,6 +1,8 @@
 package com.enigma.technicaltest.service.impl;
 
 import com.enigma.technicaltest.entity.*;
+import com.enigma.technicaltest.exception.NotFoundException;
+import com.enigma.technicaltest.repository.AccountRepository;
 import com.enigma.technicaltest.repository.CustomerRepository;
 import com.enigma.technicaltest.repository.MerchantRepository;
 import com.enigma.technicaltest.repository.UserRepository;
@@ -34,31 +36,46 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private MerchantRepository merchantRepository;
 
+    @Autowired
+    private AccountRepository accountRepository;
+
 
     @Override
-    public RegisterCustomerResponse createCustomer (User user, Customer customer, Set<Role> roles) {
+    public RegisterCustomerResponse createCustomer (User user, Customer customer, Set<Role> roles, String merchantId) {
 
         user.setRoles(roles);
         User saveUser = userRepository.save(user);
 
         String accountNumber = accountNumber();
 
+        customer.setUserId(saveUser);
         customer.setAccountNumber(accountNumber);
         customer.setBalance(0);
-        customer.setUserId(saveUser);
         Customer saveCustomer = customerRepository.save(customer);
 
         Set<String> strRoles = new HashSet<>();
         for (Role role:saveUser.getRoles()) {
             strRoles.add(role.getRole().name());
         }
+
+        Merchant merchant = findMerchant(merchantId);
+
+
+        Account account = new Account();
+        account.setMerchant(merchant);
+        account.setCustomer(saveCustomer);
+        account.setAccountNumber(accountNumber);
+        account.setBalance(0);
+        accountRepository.save(account);
+
         return new RegisterCustomerResponse(
                 saveUser.getId(),
                 saveUser.getUsername(),
                 saveUser.getEmail(),
                 saveCustomer.getId(),
                 saveCustomer.getName(),
-                saveCustomer.getAccountNumber(),
+                merchant.getName(),
+                account.getAccountNumber(),
                 saveUser.getCreatedAt(),
                 saveUser.getUpdatedAt(),
                 strRoles
@@ -112,6 +129,15 @@ public class UserServiceImpl implements UserService {
         }
 
         return accountNumber;
+    }
+
+    private Merchant findMerchant(String merchantId) {
+        Optional<Merchant> byId = merchantRepository.findById(merchantId);
+        if (byId.isPresent()) {
+            return byId.get();
+        } else {
+            throw new NotFoundException("Merchant not found");
+        }
     }
 
 

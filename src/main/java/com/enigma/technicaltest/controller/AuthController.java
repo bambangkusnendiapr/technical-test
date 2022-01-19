@@ -63,7 +63,8 @@ public class AuthController {
                 roleSet.add(role1);
             }
 
-            RegisterCustomerResponse customerCreate = userService.createCustomer(user,customer,roleSet);
+
+      RegisterCustomerResponse customerCreate = userService.createCustomer(user,customer,roleSet, request.getMerchantId());
             WebResponse<?> response = new WebResponse<>("Successfully Create New Customer",customerCreate);
 
             return ResponseEntity.status(HttpStatus.CREATED)

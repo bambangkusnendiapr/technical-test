@@ -9,7 +9,7 @@ import java.util.Set;
 
 public interface UserService extends UserDetailsService {
 
-    RegisterCustomerResponse createCustomer (User user, Customer customer, Set<Role> roles);
+    RegisterCustomerResponse createCustomer (User user, Customer customer, Set<Role> roles, String merchantId);
 
     RegisterMerchantResponse createMerchant (User user, Merchant merchant, Set<Role> roles);
 }
