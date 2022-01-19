@@ -96,18 +96,4 @@ public class AuthController {
                 .body(response);
     }
 
-  @GetMapping("/info")
-  @SecurityRequirement(name = "technicaltestapi")
-    public ResponseEntity<WebResponse<?>> loginedUser (Authentication authentication){
-      if (authentication == null){
-          throw new NotFoundException("No Logined User");
-      } else {
-          Object principal = authentication.getPrincipal();
-          WebResponse<?> response = new WebResponse<>("Logined User : ", principal);
-
-          return ResponseEntity.status(HttpStatus.OK)
-                  .body(response);
-      }
-
-  }
 }

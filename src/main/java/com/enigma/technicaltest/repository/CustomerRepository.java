@@ -15,8 +15,6 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, String> {
 
-    Page<Customer> findAll(Pageable pageable);
-
     Page<Customer> findAll(Specification<Customer> specification, Pageable pageable);
 
     @Query(value = "SELECT c FROM Customer c WHERE c.accountNumber = ?1")

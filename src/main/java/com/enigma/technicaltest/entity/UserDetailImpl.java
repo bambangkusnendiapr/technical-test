@@ -56,11 +56,6 @@ public class UserDetailImpl implements UserDetails {
         return password;
     }
 
-
-   /* public String getEmail(){
-        return email;
-    }*/
-
     @Override
     public String getUsername() {
         return username;

@@ -70,18 +70,5 @@ public class Customer {
         this.updatedAt = new Date();
     }
 
-    @Override
-    public String toString() {
-        return "Customer{" +
-                "id='" + id + '\'' +
-                ", userId='" + userId + '\'' +
-                ", name='" + name + '\'' +
-                ", address='" + address + '\'' +
-                ", phone='" + phone + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", isDeleted=" + isDeleted +
-                '}';
-    }
 }
 

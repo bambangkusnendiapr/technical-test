@@ -21,7 +21,6 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private CustomerRepository customerRepository;
 
-    //Get All data customer
     @Override
     public Page<Customer> getAll(Pageable pageable, CustomerDTO customerDTO, Sort sort) {
         Specification<Customer> specification = CustomerSpecification.getSpecification(customerDTO);
