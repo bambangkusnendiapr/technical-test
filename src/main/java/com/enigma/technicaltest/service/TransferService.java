@@ -5,6 +5,7 @@ import com.enigma.technicaltest.entity.Customer;
 import com.enigma.technicaltest.entity.Transfer;
 import com.enigma.technicaltest.request.FillInBalanceMerchantRequest;
 import com.enigma.technicaltest.request.FillInBalanceRequest;
+import com.enigma.technicaltest.request.TransferMerchantRequest;
 import com.enigma.technicaltest.request.TransferRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,4 +16,5 @@ public interface TransferService {
   Transfer fillInBalance(FillInBalanceRequest request);
   Transfer fillInBalance(FillInBalanceMerchantRequest request);
   Transfer transfer(TransferRequest request);
+  Transfer transferMerchant(TransferMerchantRequest request);
 }

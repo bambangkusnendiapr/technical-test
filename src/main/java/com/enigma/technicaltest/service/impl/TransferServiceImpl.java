@@ -13,6 +13,7 @@ import com.enigma.technicaltest.repository.TransferRepository;
 import com.enigma.technicaltest.repository.UserRepository;
 import com.enigma.technicaltest.request.FillInBalanceMerchantRequest;
 import com.enigma.technicaltest.request.FillInBalanceRequest;
+import com.enigma.technicaltest.request.TransferMerchantRequest;
 import com.enigma.technicaltest.request.TransferRequest;
 import com.enigma.technicaltest.service.TransferService;
 import com.enigma.technicaltest.specification.CustomerSpecification;
@@ -96,6 +97,43 @@ public class TransferServiceImpl implements TransferService {
     Customer fromCustomer = checkCustomer(user);
     if (request.getToAccountNumber().equalsIgnoreCase(fromCustomer.getAccountNumber())) {
       throw new BadRequestException("It is forbidden to transfer to your own account number. Please fill in balance");
+    }
+
+    if (fromCustomer.getBalance() < request.getNominal()) {
+      throw new BadRequestException("Your balance is not enough");
+    }
+
+    fromCustomer.setBalance(fromCustomer.getBalance() - request.getNominal());
+    customerRepository.save(fromCustomer);
+
+    Customer toCustomer = getCustomer(request.getToAccountNumber());
+    toCustomer.setBalance(toCustomer.getBalance() + request.getNominal());
+    customerRepository.save(toCustomer);
+
+    Transfer credit = new Transfer(fromCustomer, toCustomer, "credit", request.getDescription(), request.getNominal());
+    transferRepository.save(credit);
+
+    Transfer debit = new Transfer(toCustomer, fromCustomer, "debit", request.getDescription(), request.getNominal());
+    transferRepository.save(debit);
+
+    return credit;
+  }
+
+  @Override
+  public Transfer transferMerchant(TransferMerchantRequest request) {
+    if (request.getFromAccountNumber().equalsIgnoreCase(request.getToAccountNumber())) {
+      throw new BadRequestException("Account numbers can't be the same or do fill in balance");
+    }
+
+    if (request.getNominal() < 1) {
+      throw new BadRequestException("Nominal can not be zero or minus");
+    }
+
+    User user = checkUser();
+    Merchant merchant = checkMerchant(user);
+    Customer fromCustomer = getCustomer(request.getFromAccountNumber());
+    if (!fromCustomer.getMerchant().equals(merchant)) {
+      throw new BadRequestException("Customer not found in your merchant");
     }
 
     if (fromCustomer.getBalance() < request.getNominal()) {
