@@ -76,6 +76,11 @@ public class TransferServiceImpl implements TransferService {
     if (request.getToAccountNumber().equalsIgnoreCase(fromCustomer.getAccountNumber())) {
       throw new BadRequestException("It is forbidden to transfer to your own account number. Please fill in balance");
     }
+
+    if (fromCustomer.getBalance() < request.getNominal()) {
+      throw new BadRequestException("Your balance is not enough");
+    }
+
     fromCustomer.setBalance(fromCustomer.getBalance() - request.getNominal());
     customerRepository.save(fromCustomer);
 
