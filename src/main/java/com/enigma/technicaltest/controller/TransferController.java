@@ -2,6 +2,7 @@ package com.enigma.technicaltest.controller;
 
 import com.enigma.technicaltest.dto.TransferDTO;
 import com.enigma.technicaltest.entity.Transfer;
+import com.enigma.technicaltest.request.FillInBalanceMerchantRequest;
 import com.enigma.technicaltest.request.FillInBalanceRequest;
 import com.enigma.technicaltest.request.TransferRequest;
 import com.enigma.technicaltest.response.PageResponse;
@@ -69,6 +70,15 @@ public class TransferController {
     );
 
     return ResponseEntity.status(HttpStatus.OK).body( new WebResponse<>("Transfer History",pageResponse));
+  }
+
+  @PostMapping("/merchant/fill-in-balance")
+  @PreAuthorize("hasAnyAuthority('MERCHANT_ROLE')")
+  @SecurityRequirement(name = "technicaltestapi")
+  public ResponseEntity<WebResponse<Transfer>> fillInBalanceMerchant(@RequestBody FillInBalanceMerchantRequest request) {
+    Transfer transfer = transferService.fillInBalance(request);
+    WebResponse<Transfer> response = new WebResponse<>("Fill In Balance is Successfully", transfer);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
 }

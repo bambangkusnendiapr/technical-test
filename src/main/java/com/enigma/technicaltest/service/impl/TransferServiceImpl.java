@@ -2,13 +2,16 @@ package com.enigma.technicaltest.service.impl;
 
 import com.enigma.technicaltest.dto.TransferDTO;
 import com.enigma.technicaltest.entity.Customer;
+import com.enigma.technicaltest.entity.Merchant;
 import com.enigma.technicaltest.entity.Transfer;
 import com.enigma.technicaltest.entity.User;
 import com.enigma.technicaltest.exception.BadRequestException;
 import com.enigma.technicaltest.exception.NotFoundException;
 import com.enigma.technicaltest.repository.CustomerRepository;
+import com.enigma.technicaltest.repository.MerchantRepository;
 import com.enigma.technicaltest.repository.TransferRepository;
 import com.enigma.technicaltest.repository.UserRepository;
+import com.enigma.technicaltest.request.FillInBalanceMerchantRequest;
 import com.enigma.technicaltest.request.FillInBalanceRequest;
 import com.enigma.technicaltest.request.TransferRequest;
 import com.enigma.technicaltest.service.TransferService;
@@ -41,6 +44,9 @@ public class TransferServiceImpl implements TransferService {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private MerchantRepository merchantRepository;
+
   @Override
   public Page<Transfer> getAll(Pageable pageable, TransferDTO transferDTO) {
     User user = checkUser();
@@ -62,6 +68,21 @@ public class TransferServiceImpl implements TransferService {
     Transfer transfer = new Transfer(customer, customer, "debit", request.getNominal());
     transferRepository.save(transfer);
 
+    return transfer;
+  }
+
+  @Override
+  public Transfer fillInBalance(FillInBalanceMerchantRequest request) {
+    User user = checkUser();
+    Merchant merchant = checkMerchant(user);
+    Customer customer = getCustomer(request.getAccountNumber());
+    if (!customer.getMerchant().equals(merchant)) {
+      throw new BadRequestException("Customer not found in your merchant");
+    }
+    customer.setBalance(customer.getBalance() + request.getNominal());
+
+    Transfer transfer = new Transfer(customer, customer, "debit", request.getNominal());
+    transferRepository.save(transfer);
     return transfer;
   }
 
@@ -131,6 +152,15 @@ public class TransferServiceImpl implements TransferService {
       return customerByUserId.get();
     } else {
       throw new NotFoundException("Customer not found");
+    }
+  }
+
+  private Merchant checkMerchant(User user) {
+    Optional<Merchant> merchantByUserId = merchantRepository.getMerchantByUserId(user);
+    if (merchantByUserId.isPresent()) {
+      return merchantByUserId.get();
+    } else {
+      throw new NotFoundException("Merchant not found");
     }
   }
 }
