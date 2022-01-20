@@ -1,6 +1,8 @@
 package com.enigma.technicaltest.controller;
 
 import com.enigma.technicaltest.entity.*;
+import com.enigma.technicaltest.exception.BadRequestException;
+import com.enigma.technicaltest.repository.UserRepository;
 import com.enigma.technicaltest.request.LoginRequest;
 import com.enigma.technicaltest.request.RegisterCustomerRequest;
 import com.enigma.technicaltest.request.RegisterMerchantRequest;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -33,35 +36,45 @@ public class AuthController {
 
     @Autowired
     private CustomerService customerService;
+
     @Autowired
     private UserService userService;
+
     @Autowired
     private RoleService roleService;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     @Autowired
     private AuthenticationManager authenticationManager;
+
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/register/customer")
     public ResponseEntity<WebResponse<?>> registerCustomer (@Valid @RequestBody RegisterCustomerRequest request){
 
-            User user = new User();
-            user.setUsername(request.getUsername());
-            user.setEmail(request.getEmail());
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
+      this.checkUsernameEmail(request.getUsername(), request.getEmail());
 
-            Customer customer = new Customer();
-            customer.setName(request.getName());
+      User user = new User();
+      user.setUsername(request.getUsername());
+      user.setEmail(request.getEmail());
+      user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-            Set<String> roles = new HashSet<>();
-            roles.add("customer");
-            Set<Role> roleSet = new HashSet<>();
-            for (String role: roles) {
-                Role role1 = roleService.create(role);
-                roleSet.add(role1);
-            }
+      Customer customer = new Customer();
+      customer.setName(request.getName());
+
+      Set<String> roles = new HashSet<>();
+      roles.add("customer");
+      Set<Role> roleSet = new HashSet<>();
+      for (String role: roles) {
+          Role role1 = roleService.create(role);
+          roleSet.add(role1);
+      }
 
 
       RegisterCustomerResponse customerCreate = userService.createCustomer(user,customer,roleSet, request.getMerchantId());
@@ -71,31 +84,33 @@ public class AuthController {
                     .body(response);
     }
 
-  @PostMapping("/register/merchant")
-  public ResponseEntity<WebResponse<?>> registerMerchant(@Valid @RequestBody RegisterMerchantRequest request){
+    @PostMapping("/register/merchant")
+    public ResponseEntity<WebResponse<?>> registerMerchant(@Valid @RequestBody RegisterMerchantRequest request){
 
-    User user = new User();
-    user.setUsername(request.getUsername());
-    user.setEmail(request.getEmail());
-    user.setPassword(passwordEncoder.encode(request.getPassword()));
+      this.checkUsernameEmail(request.getUsername(), request.getEmail());
 
-    Merchant merchant = new Merchant();
-    merchant.setName(request.getName());
+      User user = new User();
+      user.setUsername(request.getUsername());
+      user.setEmail(request.getEmail());
+      user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-    Set<String> roles = new HashSet<>();
-    roles.add("merchant");
-    Set<Role> roleSet = new HashSet<>();
-    for (String role: roles) {
-      Role role1 = roleService.create(role);
-      roleSet.add(role1);
+      Merchant merchant = new Merchant();
+      merchant.setName(request.getName());
+
+      Set<String> roles = new HashSet<>();
+      roles.add("merchant");
+      Set<Role> roleSet = new HashSet<>();
+      for (String role: roles) {
+        Role role1 = roleService.create(role);
+        roleSet.add(role1);
+      }
+
+      RegisterMerchantResponse merchantCreate = userService.createMerchant(user,merchant,roleSet);
+      WebResponse<?> response = new WebResponse<>("Successfully Create New Merchant",merchantCreate);
+
+      return ResponseEntity.status(HttpStatus.CREATED)
+              .body(response);
     }
-
-    RegisterMerchantResponse merchantCreate = userService.createMerchant(user,merchant,roleSet);
-    WebResponse<?> response = new WebResponse<>("Successfully Create New Merchant",merchantCreate);
-
-    return ResponseEntity.status(HttpStatus.CREATED)
-            .body(response);
-  }
 
     @PostMapping("/login")
     public ResponseEntity<WebResponse<?>> login (@Valid @RequestBody LoginRequest request) {
@@ -120,6 +135,18 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);
+    }
+
+    private void checkUsernameEmail(String username, String email) {
+      Optional<User> byUsername = userRepository.findByUsername(username);
+      if(byUsername.isPresent()) {
+        throw new BadRequestException("Username already exist");
+      }
+
+      Optional<User> byEmail = userRepository.findByEmail(email);
+      if (byEmail.isPresent()) {
+        throw new BadRequestException("Email already exist");
+      }
     }
 
 }

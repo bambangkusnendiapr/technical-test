@@ -1,6 +1,7 @@
 package com.enigma.technicaltest.service.impl;
 
 import com.enigma.technicaltest.entity.*;
+import com.enigma.technicaltest.exception.BadRequestException;
 import com.enigma.technicaltest.exception.NotFoundException;
 import com.enigma.technicaltest.repository.CustomerRepository;
 import com.enigma.technicaltest.repository.MerchantRepository;
@@ -42,7 +43,7 @@ public class UserServiceImpl implements UserService {
         user.setRoles(roles);
         User saveUser = userRepository.save(user);
 
-        String accountNumber = accountNumber();
+        String accountNumber = this.accountNumber();
 
         Merchant merchant = findMerchant(merchantId);
 
