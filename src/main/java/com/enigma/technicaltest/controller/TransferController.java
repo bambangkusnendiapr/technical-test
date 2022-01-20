@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,6 +29,8 @@ public class TransferController {
   private TransferService transferService;
 
   @PostMapping("/fill-in-balance")
+  @PreAuthorize("hasAnyAuthority('CUSTOMER_ROLE')")
+  @SecurityRequirement(name = "technicaltestapi")
   public ResponseEntity<WebResponse<Transfer>> fillInBalance(@RequestBody FillInBalanceRequest request) {
     Transfer transfer = transferService.fillInBalance(request);
     WebResponse<Transfer> response = new WebResponse<>("Fill In Balance is Successfully", transfer);
@@ -35,6 +38,8 @@ public class TransferController {
   }
 
   @PostMapping("/transfer")
+  @PreAuthorize("hasAnyAuthority('CUSTOMER_ROLE')")
+  @SecurityRequirement(name = "technicaltestapi")
   public ResponseEntity<WebResponse<Transfer>> transfer(@RequestBody TransferRequest request) {
     Transfer transfer = transferService.transfer(request);
     WebResponse<Transfer> response = new WebResponse<>("Transfer is Successfully", transfer);
@@ -42,6 +47,8 @@ public class TransferController {
   }
 
   @GetMapping("/history")
+  @PreAuthorize("hasAnyAuthority('CUSTOMER_ROLE')")
+  @SecurityRequirement(name = "technicaltestapi")
   public ResponseEntity<WebResponse<PageResponse<?>>> getHistory(
           @RequestParam(name = "size", defaultValue = "10") Integer size,
           @RequestParam(name = "page",defaultValue = "0") Integer page,
