@@ -44,6 +44,10 @@ public class Customer {
 
     private Integer balance;
 
+    @ManyToOne(targetEntity = Merchant.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "merchant_id")
+    private Merchant merchant;
+
     @CreatedDate
     @Column(updatable = false)
     private Date createdAt;

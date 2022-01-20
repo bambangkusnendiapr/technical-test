@@ -2,7 +2,6 @@ package com.enigma.technicaltest.service.impl;
 
 import com.enigma.technicaltest.entity.*;
 import com.enigma.technicaltest.exception.NotFoundException;
-import com.enigma.technicaltest.repository.AccountRepository;
 import com.enigma.technicaltest.repository.CustomerRepository;
 import com.enigma.technicaltest.repository.MerchantRepository;
 import com.enigma.technicaltest.repository.UserRepository;
@@ -36,9 +35,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private MerchantRepository merchantRepository;
 
-    @Autowired
-    private AccountRepository accountRepository;
-
 
     @Override
     public RegisterCustomerResponse createCustomer (User user, Customer customer, Set<Role> roles, String merchantId) {
@@ -48,25 +44,18 @@ public class UserServiceImpl implements UserService {
 
         String accountNumber = accountNumber();
 
+        Merchant merchant = findMerchant(merchantId);
+
         customer.setUserId(saveUser);
         customer.setAccountNumber(accountNumber);
         customer.setBalance(0);
+        customer.setMerchant(merchant);
         Customer saveCustomer = customerRepository.save(customer);
 
         Set<String> strRoles = new HashSet<>();
         for (Role role:saveUser.getRoles()) {
             strRoles.add(role.getRole().name());
         }
-
-        Merchant merchant = findMerchant(merchantId);
-
-
-        Account account = new Account();
-        account.setMerchant(merchant);
-        account.setCustomer(saveCustomer);
-        account.setAccountNumber(accountNumber);
-        account.setBalance(0);
-        accountRepository.save(account);
 
         return new RegisterCustomerResponse(
                 saveUser.getId(),
@@ -75,7 +64,7 @@ public class UserServiceImpl implements UserService {
                 saveCustomer.getId(),
                 saveCustomer.getName(),
                 merchant.getName(),
-                account.getAccountNumber(),
+                saveCustomer.getAccountNumber(),
                 saveUser.getCreatedAt(),
                 saveUser.getUpdatedAt(),
                 strRoles
